@@ -36,6 +36,13 @@
             background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 12px;
             color: #333; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+        #music-toggle {
+            position: absolute; top: 20px; right: 20px;
+            z-index: 20; border: none; border-radius: 999px;
+            padding: 10px 14px; font-family: 'JetBrains Mono', monospace;
+            background: rgba(214, 51, 132, 0.92); color: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2); cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -50,6 +57,7 @@
     </div>
 
     <div id="regalo-final">
+        <button id="music-toggle" onclick="toggleMusica()">Pausar musica</button>
         <div class="dedicatoria">
             <h1 id="tit"></h1>
             <p id="sub"></p>
@@ -70,10 +78,14 @@
             player = new YT.Player('player', {
                 height: '0', width: '0',
                 videoId: 'TTAU7lLDZYU',
-                playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: 'TTAU7lLDZYU' },
+                playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: 'TTAU7lLDZYU', playsinline: 1 },
                 events: {
                     onReady: () => {
-                        if (shouldPlayWhenReady) player.playVideo();
+                        if (shouldPlayWhenReady) {
+                            player.unMute();
+                            player.setVolume(100);
+                            player.playVideo();
+                        }
                     }
                 }
             });
@@ -81,10 +93,16 @@
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const musicToggle = document.getElementById('music-toggle');
 
         function iniciar() {
             shouldPlayWhenReady = true;
-            if (player && player.playVideo) player.playVideo();
+            if (player && player.playVideo) {
+                player.unMute();
+                player.setVolume(100);
+                player.playVideo();
+            }
+            musicToggle.innerText = 'Pausar musica';
 
             document.getElementById('escena-sobre').style.display = 'none';
             const regalo = document.getElementById('regalo-final');
@@ -109,6 +127,22 @@
                 const s = Math.floor((diff % 60000) / 1000);
                 document.getElementById('timer').innerText = `${d}d ${h}h ${m}m ${s}s`;
             }, 1000);
+        }
+
+        function toggleMusica() {
+            shouldPlayWhenReady = true;
+            if (!player || !player.getPlayerState) return;
+
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+                musicToggle.innerText = 'Reproducir musica';
+            } else {
+                player.unMute();
+                player.setVolume(100);
+                player.playVideo();
+                musicToggle.innerText = 'Pausar musica';
+            }
         }
 
         function escribir(id, txt, v, cb) {
