@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu vida en días ❤️</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=JetBrains+Mono:wght@500&display=swap');
+
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+
+        /* ESCENA 1: EL SOBRE */
+        #escena-sobre {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background: #000; z-index: 100; cursor: pointer;
+        }
+        .sobre {
+            width: 160px; height: 110px; background: #fff; position: relative;
+            border-radius: 8px; box-shadow: 0 0 40px rgba(255,20,147,0.5);
+            display: flex; flex-direction: column; justify-content: center; 
+            align-items: center; font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ESCENA 2: EL REGALO */
+        #regalo-final {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fffafb; visibility: hidden; opacity: 0;
+            transition: opacity 1.2s; z-index: 1;
+        }
+
+        .dedicatoria { position: absolute; top: 7%; width: 100%; text-align: center; z-index: 10; font-family: 'Dancing Script', cursive; color: #d63384; }
+        .dedicatoria h1 { font-size: 3.5rem; margin: 0; }
+        .dedicatoria p { font-size: 1.4rem; color: #5c4033; max-width: 85%; margin: 10px auto; line-height: 1.4; }
+
+        #canvas { display: block; position: absolute; bottom: 0; left: 0; }
+
+        /* CONTADOR DE DÍAS DE VIDA */
+        #timer-container {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            text-align: center; font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.9); padding: 15px 25px;
+            border-radius: 15px; color: #333; z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ffb3c1;
+        }
+        .label-vida { font-size: 0.9rem; color: #d63384; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        #timer { font-size: 1.4rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="escena-sobre" onclick="iniciar()">
+        <div class="sobre">
+            <span style="font-size: 2.5rem;">✉️</span>
+            <span style="font-size: 0.8rem; color: #d63384; margin-top: 5px;">Abrir mensaje</span>
+        </div>
+    </div>
+
+    <div id="regalo-final">
+        <div class="dedicatoria">
+            <h1 id="tit"></h1>
+            <p id="sub"></p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div id="timer-container">
+            <div class="label-vida">Has iluminado el mundo durante:</div>
+            <div id="timer">Calculando...</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const regalo = document.getElementById('regalo-final');
+        const sobre = document.getElementById('escena-sobre');
+
+        function iniciar() {
+            sobre.style.display = 'none';
+            regalo.style.visibility = 'visible';
+            regalo.style.opacity = '1';
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Iniciar dibujo del árbol con trigonometría (X, Y, Largo, Ángulo, Grosor)
+            dibujarRama(canvas.width / 2, canvas.height, 125, -Math.PI / 2, 12);
+
+            // Efecto de escritura
+            escribir("tit", "¡Feliz Cumpleaños! ❤️", 100, () => {
+                escribir("sub", "Cada día que pasa es un regalo para quienes te conocemos. Gracias por ser tú. Te Amo Pupuchurra ❤️ Felices 27 años ❤️", 50);
+            });
+
+            // LÓGICA DE DÍAS DE VIDA
+            const nacimiento = new Date('2001-04-27T00:00:00');
+            
+            function actualizarContador() {
+                const ahora = new Date();
+                const diff = ahora - nacimiento;
+
+                const totalDias = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const minutos = Math.floor((diff / (1000 * 60)) % 60);
+                const segundos = Math.floor((diff / 1000) % 60);
+
+                document.getElementById('timer').innerText = 
+                    `${totalDias} días, ${horas}h ${minutos}m ${segundos}s`;
+            }
+
+            setInterval(actualizarContador, 1000);
+            actualizarContador();
+        }
+
+        function escribir(id, txt, v, cb) {
+            let i = 0;
+            const el = document.getElementById(id);
+            function t() {
+                if (i < txt.length) { el.innerHTML += txt.charAt(i); i++; setTimeout(t, v); }
+                else if (cb) cb();
+            }
+            t();
+        }
+
+        function drawHeart(x, y, s) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x - s/2, y - s/2, x - s, y + s/3, x, y + s);
+            ctx.bezierCurveTo(x + s, y + s/3, x + s/2, y - s/2, x, y);
+            ctx.fillStyle = "#ff4d6d";
+            ctx.fill();
+        }
+
+        function dibujarRama(x1, y1, len, angle, w) {
+            const x2 = x1 + Math.cos(angle) * len;
+            const y2 = y1 + Math.sin(angle) * len;
+
+            ctx.beginPath();
+            ctx.strokeStyle = "#4e2a1e";
+            ctx.lineWidth = w;
+            ctx.lineCap = "round";
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            if (len < 10) {
+                drawHeart(x2, y2, 10);
+                return;
+            }
+
+            setTimeout(() => {
+                dibujarRama(x2, y2, len * 0.8, angle - 0.45, w * 0.7);
+                dibujarRama(x2, y2, len * 0.8, angle + 0.45, w * 0.7);
+            }, 200);
+        }
+    </script>
+</body>
+</html>
