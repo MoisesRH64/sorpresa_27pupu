@@ -62,11 +62,33 @@
             width: min(90vw, 680px);
             max-height: 78vh;
             overflow-y: auto;
-            background: rgba(255, 255, 255, 0.96);
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.97), rgba(255, 240, 247, 0.97));
             border: 1px solid rgba(255, 166, 204, 0.75);
             border-radius: 22px;
             box-shadow: 0 20px 45px rgba(87, 28, 59, 0.25);
-            padding: 24px 24px 18px;
+            padding: 26px 24px 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        .modal-card::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 1px dashed rgba(214, 51, 132, 0.32);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+        .modal-badge {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(214, 51, 132, 0.12);
+            color: #c02670;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.4px;
         }
         .modal-card h2 {
             margin: 0 0 10px;
@@ -81,18 +103,26 @@
             font-size: clamp(1rem, 2.7vw, 1.15rem);
             white-space: pre-line;
         }
+        .modal-tap {
+            margin-top: 14px;
+            color: #b52f73;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            text-align: right;
+        }
         .modal-actions {
             margin-top: 16px;
             text-align: right;
         }
-        #cerrar-modal {
+        #iniciar-modal {
             border: none;
             border-radius: 999px;
-            background: #d63384;
+            background: linear-gradient(135deg, #d63384, #ea4f9d);
             color: #fff;
-            padding: 9px 16px;
+            padding: 10px 17px;
             font-family: 'JetBrains Mono', monospace;
             cursor: pointer;
+            box-shadow: 0 8px 18px rgba(214, 51, 132, 0.35);
         }
         @media (max-width: 700px) {
             #music-toggle { top: 14px; right: 14px; padding: 9px 12px; font-size: 0.78rem; }
@@ -116,15 +146,17 @@
         <button id="music-toggle" onclick="toggleMusica()">Pausar música</button>
 
         <div id="mensaje-modal" class="visible">
-            <div class="modal-card">
+            <div class="modal-card" onclick="confirmarMensaje()">
+                <span class="modal-badge">UN MENSAJE PARA TI</span>
                 <h2>Para ti, preciosa ❤️</h2>
                 <p>Feliz cumpleaños preciosa, ya son 5 añitos compartiendo este día a tu lado, agradezco infinitamente el que me dejes compartir este día tan importantre de tu vida conmigo, sigue persiguiendo tus sueños y lo más importante nunca dejes de creer.
 
 Que esto sea un bonito recuerdo y que se atesore en tu coranzocito de por vida
 Te Amo
 Con mucho Amor y carino Moises</p>
+                <div class="modal-tap">Toca el mensaje para comenzar la música</div>
                 <div class="modal-actions">
-                    <button id="cerrar-modal" onclick="cerrarModal()">Cerrar</button>
+                    <button id="iniciar-modal" onclick="event.stopPropagation(); confirmarMensaje()">Comenzar</button>
                 </div>
             </div>
         </div>
@@ -199,10 +231,8 @@ Con mucho Amor y carino Moises</p>
         let treeStarted = false;
 
         function iniciar() {
-            shouldPlayWhenReady = true;
-            intentarReproducir();
-            iniciarReintentoReproduccion();
-            musicToggle.innerText = 'Pausar música';
+            shouldPlayWhenReady = false;
+            musicToggle.innerText = 'Reproducir música';
 
             document.getElementById('escena-sobre').style.display = 'none';
             const regalo = document.getElementById('regalo-final');
@@ -232,6 +262,14 @@ Con mucho Amor y carino Moises</p>
             };
             actualizarContador();
             timerId = setInterval(actualizarContador, 1000);
+        }
+
+        function confirmarMensaje() {
+            shouldPlayWhenReady = true;
+            intentarReproducir();
+            iniciarReintentoReproduccion();
+            musicToggle.innerText = 'Pausar música';
+            cerrarModal();
         }
 
         function cerrarModal() {
