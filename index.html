@@ -143,7 +143,7 @@
     </div>
 
     <div id="regalo-final">
-        <button id="music-toggle" onclick="toggleMusica()">Pausar música</button>
+        <button id="music-toggle" onclick="toggleMusica()">Reproducir música</button>
 
         <div id="mensaje-modal" class="visible">
             <div class="modal-card" onclick="confirmarMensaje()">
@@ -154,7 +154,7 @@
 Que esto sea un bonito recuerdo y que se atesore en tu coranzocito de por vida
 Te Amo
 Con mucho Amor y carino Moises</p>
-                <div class="modal-tap">Toca el mensaje para comenzar la música</div>
+                <div id="modal-status" class="modal-tap">Toca el mensaje para comenzar la música</div>
                 <div class="modal-actions">
                     <button id="iniciar-modal" onclick="event.stopPropagation(); confirmarMensaje()">Comenzar</button>
                 </div>
@@ -178,9 +178,12 @@ Con mucho Amor y carino Moises</p>
         function intentarReproducir() {
             if (!player || !player.playVideo) return false;
             try {
-                player.unMute();
-                player.setVolume(100);
                 player.playVideo();
+                setTimeout(() => {
+                    if (!player || !player.unMute) return;
+                    player.unMute();
+                    player.setVolume(100);
+                }, 180);
                 return true;
             } catch (error) {
                 return false;
@@ -219,7 +222,9 @@ Con mucho Amor y carino Moises</p>
                             intentarReproducir();
                             iniciarReintentoReproduccion();
                         }
-                    }
+                    },
+                    onStateChange: manejarCambioEstado,
+                    onError: manejarErrorPlayer
                 }
             });
         }
@@ -228,6 +233,7 @@ Con mucho Amor y carino Moises</p>
         const ctx = canvas.getContext('2d');
         const musicToggle = document.getElementById('music-toggle');
         const mensajeModal = document.getElementById('mensaje-modal');
+        const modalStatus = document.getElementById('modal-status');
         let treeStarted = false;
 
         function iniciar() {
@@ -266,10 +272,9 @@ Con mucho Amor y carino Moises</p>
 
         function confirmarMensaje() {
             shouldPlayWhenReady = true;
+            modalStatus.innerText = 'Iniciando musica...';
             intentarReproducir();
             iniciarReintentoReproduccion();
-            musicToggle.innerText = 'Pausar música';
-            cerrarModal();
         }
 
         function cerrarModal() {
@@ -290,6 +295,28 @@ Con mucho Amor y carino Moises</p>
                 player.playVideo();
                 musicToggle.innerText = 'Pausar música';
             }
+        }
+
+        function manejarCambioEstado(event) {
+            if (!window.YT || typeof YT.PlayerState === 'undefined') return;
+            if (event.data === YT.PlayerState.PLAYING) {
+                try {
+                    player.unMute();
+                    player.setVolume(100);
+                } catch (error) {
+                    // Ignorado: algunos navegadores bloquean volumen hasta reproducir.
+                }
+                musicToggle.innerText = 'Pausar música';
+                cerrarModal();
+            }
+            if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                musicToggle.innerText = 'Reproducir música';
+            }
+        }
+
+        function manejarErrorPlayer() {
+            modalStatus.innerText = 'No se pudo iniciar automaticamente. Toca "Comenzar" otra vez o usa "Reproducir musica".';
+            musicToggle.innerText = 'Reproducir música';
         }
 
         function dibujarAuraSuelo() {
