@@ -307,7 +307,7 @@ Con mucho Amor y carino Moises</p>
                     // Ignorado: algunos navegadores bloquean volumen hasta reproducir.
                 }
                 musicToggle.innerText = 'Pausar música';
-                cerrarModal();
+                modalStatus.innerText = 'La musica ya esta sonando. Puedes seguir leyendo el mensaje ❤️';
             }
             if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
                 musicToggle.innerText = 'Reproducir música';
