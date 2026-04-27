@@ -141,6 +141,34 @@ Con mucho Amor y carino Moises</p>
         let player;
         let shouldPlayWhenReady = false;
         let timerId = null;
+        let playRetryId = null;
+
+        function intentarReproducir() {
+            if (!player || !player.playVideo) return false;
+            try {
+                player.unMute();
+                player.setVolume(100);
+                player.playVideo();
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function iniciarReintentoReproduccion() {
+            if (playRetryId) clearInterval(playRetryId);
+            let intentos = 0;
+            playRetryId = setInterval(() => {
+                intentos += 1;
+                const reprodujo = intentarReproducir();
+                const estado = player && player.getPlayerState ? player.getPlayerState() : null;
+
+                if ((reprodujo && estado === YT.PlayerState.PLAYING) || intentos >= 20) {
+                    clearInterval(playRetryId);
+                    playRetryId = null;
+                }
+            }, 250);
+        }
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
@@ -156,9 +184,8 @@ Con mucho Amor y carino Moises</p>
                 events: {
                     onReady: () => {
                         if (shouldPlayWhenReady) {
-                            player.unMute();
-                            player.setVolume(100);
-                            player.playVideo();
+                            intentarReproducir();
+                            iniciarReintentoReproduccion();
                         }
                     }
                 }
@@ -173,11 +200,8 @@ Con mucho Amor y carino Moises</p>
 
         function iniciar() {
             shouldPlayWhenReady = true;
-            if (player && player.playVideo) {
-                player.unMute();
-                player.setVolume(100);
-                player.playVideo();
-            }
+            intentarReproducir();
+            iniciarReintentoReproduccion();
             musicToggle.innerText = 'Pausar música';
 
             document.getElementById('escena-sobre').style.display = 'none';
